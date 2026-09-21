@@ -11,6 +11,18 @@ type Props = {
 export default function CartDrawer({ isOpen, onClose }: Props) {
   const { items, removeItem, updateQuantity, totalPrice } = useCartStore()
 
+  const handleCheckout = async () => {
+  const res = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  })
+  const data = await res.json()
+  if (data.url) {
+    window.location.href = data.url
+  }
+}
+
   return (
     <>
       {/* Dark overlay behind the drawer */}
@@ -68,9 +80,12 @@ export default function CartDrawer({ isOpen, onClose }: Props) {
               <span>Subtotal</span>
               <span>${(totalPrice() / 100).toFixed(2)}</span>
             </div>
-            <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg">
-              Checkout
-            </button>
+                <button
+               onClick={handleCheckout}
+               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg"
+                >
+                     Checkout
+                </button>
           </div>
         )}
       </div>
