@@ -4,6 +4,9 @@ import { stripe } from '@/lib/stripe'
 import Stripe from 'stripe'
 import prisma from '@/lib/prisma'
 
+import { resend } from '@/lib/resend'
+import { orderConfirmationHtml } from '@/lib/emails/orderConfirmation'
+
 export async function POST(req: NextRequest) {
   const body = await req.text()
   const signature = req.headers.get('stripe-signature')!
@@ -59,8 +62,36 @@ export async function POST(req: NextRequest) {
     })
 
     console.log('Order created:', order.id)
-    // Phase 5 will add: send confirmation email here
+
+// Fetch the order back with product names attached (order.items only has productId)
+const orderWithProducts = await prisma.order.findUnique({
+  where: { id: order.id },
+  include: { items: { include: { product: true } } },
+})
+
+if (orderWithProducts) {
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL!,
+    to: orderWithProducts.customerEmail,
+    subject: `Order Confirmation — Northern Fishers #${orderWithProducts.id.slice(-8)}`,
+    html: orderConfirmationHtml({
+      customerName: orderWithProducts.customerName,
+      orderId: orderWithProducts.id,
+      items: orderWithProducts.items.map((item) => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        priceAtPurchase: item.priceAtPurchase,
+      })),
+      totalAmount: orderWithProducts.totalAmount,
+      shippingAddress: orderWithProducts.shippingAddress,
+    }),
+  })
+
+  console.log('Confirmation email sent to:', orderWithProducts.customerEmail)
+}
   }
+
+
 
   return NextResponse.json({ received: true })
 }
