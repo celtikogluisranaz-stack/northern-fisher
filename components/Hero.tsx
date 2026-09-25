@@ -12,6 +12,7 @@ export default function Hero() {
         className="inline-block mt-8 bg-orange-500 hover:bg-orange-600 transition-colors text-white font-semibold px-8 py-3 rounded-lg"
       >
         Shop Now 
+
       </a>
     </section>
   )
