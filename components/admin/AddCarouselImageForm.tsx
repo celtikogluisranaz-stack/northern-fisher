@@ -1,68 +1,106 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import ImageUploadInput from '@/components/admin/ImageUploadInput'
+import { useEffect, useRef, useState } from 'react'
+import { upload } from '@vercel/blob/client'
 
-export default function AddCarouselImageForm({
-  addImage,
-}: {
-  addImage: (formData: FormData) => Promise<void>
-}) {
-  const router = useRouter()
-  const [resetKey, setResetKey] = useState(0)
-  const [submitting, setSubmitting] = useState(false)
+type Props = {
+  name: string
+  defaultImageUrl?: string
+  resetKey?: number
+}
 
-  async function handleSubmit(formData: FormData) {
+export default function ImageUploadInput({
+  name,
+  defaultImageUrl,
+  resetKey,
+}: Props) {
+  const [imageUrl, setImageUrl] = useState(defaultImageUrl || '')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setImageUrl(defaultImageUrl || '')
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }, [resetKey, defaultImageUrl])
+
+  async function handleFileChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0]
+
+    if (!file) return
+
     try {
-      setSubmitting(true)
+      setUploading(true)
 
-      await addImage(formData)
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      })
 
-      // Reset the uploaded image
-      setResetKey((key) => key + 1)
-
-      // Refresh the server component so the new image appears
-      router.refresh()
-
-      // Reset the native file input
-      const form = document.querySelector(
-        '#add-carousel-form'
-      ) as HTMLFormElement | null
-
-      form?.reset()
+      setImageUrl(blob.url)
     } catch (error) {
-      console.error('Failed to add carousel image:', error)
-      alert('Failed to add image. Please try again.')
+      console.error('Image upload failed:', error)
+      alert('Image upload failed. Please try again.')
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     } finally {
-      setSubmitting(false)
+      setUploading(false)
     }
   }
 
   return (
-    <form
-      id="add-carousel-form"
-      action={handleSubmit}
-      className="flex flex-col gap-4 max-w-md"
-    >
-      <ImageUploadInput
-        name="imageUrl"
-        resetKey={resetKey}
+    <div className="space-y-2">
+      <input
+        type="hidden"
+        name={name}
+        value={imageUrl}
       />
 
       <input
-        name="altText"
-        placeholder="Short description (e.g. 'Winter sunrise on the lake')"
-        className="border p-2 rounded"
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        disabled={uploading}
+        className="block w-full text-sm"
       />
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-2 rounded-lg"
-      >
-        {submitting ? 'Adding...' : 'Add Image'}
-      </button>
-    </form>
+      {uploading && (
+        <p className="text-sm text-gray-500">
+          Uploading image...
+        </p>
+      )}
+
+      {imageUrl && (
+        <div className="space-y-2">
+          <img
+            src={imageUrl}
+            alt="Uploaded preview"
+            className="h-24 w-24 rounded object-cover"
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              setImageUrl('')
+
+              if (fileInputRef.current) {
+                fileInputRef.current.value = ''
+              }
+            }}
+            disabled={uploading}
+            className="text-sm text-red-600 hover:text-red-800"
+          >
+            Remove image
+          </button>
+        </div>
+      )}
+    </div>
   )
 }

@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 01e89af65ddb1a994ca43cf9830eb41ad298e2ce
 import prisma from '@/lib/prisma'
 import Link from 'next/link'
 
