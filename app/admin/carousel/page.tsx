@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+=======
+import { revalidatePath } from 'next/cache'
+import AddCarouselImageForm from '@/components/admin/AddCarouselImageForm'
+import prisma from "@/lib/prisma"
+
+>>>>>>> 01e89af65ddb1a994ca43cf9830eb41ad298e2ce
 export default async function CarouselAdminPage() {
   const images = await prisma.carouselImage.findMany({
     orderBy: { order: 'asc' },
@@ -19,6 +26,7 @@ export default async function CarouselAdminPage() {
   }
 
   async function deleteImage(formData: FormData) {
+<<<<<<< HEAD
     'use server'
     const id = formData.get('id') as string
     await prisma.carouselImage.delete({ where: { id } })
@@ -46,6 +54,60 @@ export default async function CarouselAdminPage() {
     await prisma.carouselImage.update({ where: { id: current.id }, data: { order: neighbor.order } })
     await prisma.carouselImage.update({ where: { id: neighbor.id }, data: { order: current.order } })
   }
+=======
+  'use server'
+
+  const id = formData.get('id') as string
+
+  await prisma.carouselImage.delete({
+    where: { id },
+  })
+
+  revalidatePath('/admin/carousel')
+  revalidatePath('/')
+}
+
+  async function moveImage(formData: FormData) {
+  'use server'
+
+  const id = formData.get('id') as string
+  const direction = formData.get('direction') as string
+
+  const current = await prisma.carouselImage.findUnique({
+    where: { id },
+  })
+
+  if (!current) return
+
+  const neighbor = await prisma.carouselImage.findFirst({
+    where: {
+      order:
+        direction === 'up'
+          ? { lt: current.order }
+          : { gt: current.order },
+    },
+    orderBy: {
+      order: direction === 'up' ? 'desc' : 'asc',
+    },
+  })
+
+  if (!neighbor) return
+
+  // Swap the order values
+  await prisma.carouselImage.update({
+    where: { id: current.id },
+    data: { order: neighbor.order },
+  })
+
+  await prisma.carouselImage.update({
+    where: { id: neighbor.id },
+    data: { order: current.order },
+  })
+
+  revalidatePath('/admin/carousel')
+  revalidatePath('/')
+}
+>>>>>>> 01e89af65ddb1a994ca43cf9830eb41ad298e2ce
 
   return (
     <div>
@@ -83,6 +145,7 @@ export default async function CarouselAdminPage() {
   )
 }
 
+<<<<<<< HEAD
 // Needs to be a client component because of ImageUploadInput's file picker
 import ImageUploadInput from '@/components/admin/ImageUploadInput'
 import prisma from '@/lib/prisma'
@@ -98,3 +161,5 @@ function AddCarouselImageForm({ addImage }: { addImage: (formData: FormData) => 
     </form>
   )
 }
+=======
+>>>>>>> 01e89af65ddb1a994ca43cf9830eb41ad298e2ce
