@@ -1,7 +1,6 @@
-import prisma from '@/lib/prisma'
+import  prisma  from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import ImageUploadInput from '@/components/admin/ImageUploadInput'
-
 
 export default function NewProductPage() {
   async function createProduct(formData: FormData) {

@@ -7,7 +7,7 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <UserButton />
       </div>
-      <p>Welcome to the Northern Fishers admin panel!</p>
+      <p>Welcome to the Northern Fishers admin panel.</p>
     </div>
   )
 }

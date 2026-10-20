@@ -1,6 +1,5 @@
-
+import  prisma  from '@/lib/prisma'
 import AddToCartButton from '@/components/AddToCartButton'
-import prisma from '@/lib/prisma'
 
 export default async function ProductShowcase() {
   const product = await prisma.product.findFirst({
