@@ -3,8 +3,7 @@ import Carousel from '@/components/Carousel'
 import ProductShowcase from '@/components/ProductShowcase'
 import Footer from '@/components/Footer'
 import CartProvider from '@/components/CartProvider'
-import prisma from '@/lib/prisma'
-
+import  prisma  from '@/lib/prisma'
 
 export default async function Home() {
   const carouselImages = await prisma.carouselImage.findMany({
