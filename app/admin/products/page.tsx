@@ -1,7 +1,11 @@
+import { requireAdmin } from '@/lib/requireAdmin'
 import  prisma  from '@/lib/prisma'
 import Link from 'next/link'
 
 export default async function ProductsPage() {
+
+  await requireAdmin()
+
   const products = await prisma.product.findMany({
     orderBy: { createdAt: 'desc' },
   })

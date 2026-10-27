@@ -1,12 +1,18 @@
+import { requireAdmin } from '@/lib/requireAdmin'
 import  prisma  from '@/lib/prisma'
 
 export default async function CarouselAdminPage() {
+
+  await requireAdmin()
+
   const images = await prisma.carouselImage.findMany({
     orderBy: { order: 'asc' },
   })
 
   async function addImage(formData: FormData) {
     'use server'
+
+    await requireAdmin()
 
     const imageUrl = formData.get('imageUrl') as string
     const maxOrder = await prisma.carouselImage.aggregate({ _max: { order: true } })
@@ -22,12 +28,17 @@ export default async function CarouselAdminPage() {
 
   async function deleteImage(formData: FormData) {
     'use server'
+
+    await requireAdmin()
+
     const id = formData.get('id') as string
     await prisma.carouselImage.delete({ where: { id } })
   }
 
   async function moveImage(formData: FormData) {
     'use server'
+
+    await requireAdmin()
 
     const id = formData.get('id') as string
     const direction = formData.get('direction') as string
