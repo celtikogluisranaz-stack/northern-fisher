@@ -1,8 +1,10 @@
+import { requireAdmin } from '@/lib/requireAdmin'
 import  prisma  from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import ImageUploadInput from '@/components/admin/ImageUploadInput'
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin()
   const { id } = await params
   const product = await prisma.product.findUnique({ where: { id } })
 
@@ -12,6 +14,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   async function updateProduct(formData: FormData) {
     'use server'
+
+    await requireAdmin()
 
     await prisma.product.update({
       where: { id },
@@ -30,6 +34,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   async function deleteProduct() {
     'use server'
+
+    await requireAdmin()
 
     await prisma.product.delete({ where: { id } })
     redirect('/admin/products')
